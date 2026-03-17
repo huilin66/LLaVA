@@ -1,0 +1,12 @@
+property,value
+category,wall_signboard
+surface_missing,False
+surface_incomplete,False
+surface_corroded,False
+frame_corroded,False
+surface_peeling,False
+surface_fade,False
+surface_deformed,False
+frame_deformed,False
+disconnected,False
+added_billboard,False
