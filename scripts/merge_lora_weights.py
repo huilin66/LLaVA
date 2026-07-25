@@ -11,7 +11,7 @@ def merge_lora(args):
 
     model.save_pretrained(args.save_model_path)
     tokenizer.save_pretrained(args.save_model_path)
-
+    print(f"saved to {args.save_model_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -1,4 +1,7 @@
-python /localnvme/project/LLaVA-main/scripts/merge_lora_weights.py  \
-       --model-path /localnvme/project/LLaVA-main/checkpoints/llava-v1.5-7b-lora-cubit-det \
-       --model-base /localnvme/project/LLaVA-main/ckpt/llava-v1.5-7b \
-       --save-model-path /localnvme/project/LLaVA-main/checkpoints/llava-v1.5-7b-lora-cubit-det-merge
+#python /localnvme/project/LLaVA-main/scripts/predict_detection.py  \
+#       --model_path /localnvme/project/LLaVA-main/checkpoints/llava-v1.5-7b-cubit-det-merge \
+#       --image_file /scrinvme/huilin/bdd/open_source_data/cubit-det/images/hk4825.jpg
+
+python /localnvme/project/LLaVA-main/scripts/predict_detection.py  \
+       --model_path /localnvme/project/LLaVA-main/checkpoints/llava-v1.5-7b-lora-defect1-merge \
+       --image_file /scrinvme/huilin/bdd/open_source_data/cubit-det/images/hk4825.jpg
