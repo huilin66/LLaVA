@@ -12,6 +12,7 @@ from llava.conversation import (default_conversation, conv_templates,
 from llava.constants import LOGDIR
 from llava.utils import (build_logger, server_error_msg,
     violates_moderation, moderation_msg)
+from llava.serve.create_pdf import df2pdf
 import hashlib
 
 
@@ -103,6 +104,28 @@ def downvote_last_response(state, model_selector, request: gr.Request):
     return ("",) + (disable_btn,) * 3
 
 
+def down_last_response(state, imagebox, request: gr.Request):
+    cur_dir = os.path.dirname(os.path.abspath(__file__))
+    temp_path = os.path.join(cur_dir, 'temp.pdf')
+    import pandas as pd
+    logger.info(state.messages[1][1])
+    logger.info(imagebox)
+    # return (enable_btn,) * 1
+    data_str = state.messages[1][1]
+    df = pd.DataFrame(None, columns=['property', 'value'])
+    data_list = data_str.split('\n')
+    for data in data_list[2:]:
+        values = data.split('|')[1:3]
+        values = [value[1:] if value[0] == ' ' else value for value in values]
+        values = [value[:-1] if value[-1] == ' ' else value for value in values]
+        # print(values)
+        df.loc[len(df)] = values
+    print(df)
+    df2pdf(df, temp_path, r'llava/serve/examples/1.jpg')
+    # df.to_csv(temp_path)
+    # logger.info(temp_path)
+    return gr.DownloadButton(value=temp_path)
+
 def flag_last_response(state, model_selector, request: gr.Request):
     logger.info(f"flag. ip: {request.client.host}")
     vote_last_response(state, "flag", model_selector, request)
@@ -116,26 +139,26 @@ def regenerate(state, image_process_mode, request: gr.Request):
     if type(prev_human_msg[1]) in (tuple, list):
         prev_human_msg[1] = (*prev_human_msg[1][:2], image_process_mode)
     state.skip_next = False
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 6
 
 
 def clear_history(request: gr.Request):
     logger.info(f"clear_history. ip: {request.client.host}")
     state = default_conversation.copy()
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 6
 
 
 def add_text(state, text, image, image_process_mode, request: gr.Request):
     logger.info(f"add_text. ip: {request.client.host}. len: {len(text)}")
     if len(text) <= 0 and image is None:
         state.skip_next = True
-        return (state, state.to_gradio_chatbot(), "", None) + (no_change_btn,) * 5
+        return (state, state.to_gradio_chatbot(), "", None) + (no_change_btn,) * 6
     if args.moderate:
         flagged = violates_moderation(text)
         if flagged:
             state.skip_next = True
             return (state, state.to_gradio_chatbot(), moderation_msg, None) + (
-                no_change_btn,) * 5
+                no_change_btn,) * 6
 
     text = text[:1536]  # Hard cut-off
     if image is not None:
@@ -148,7 +171,7 @@ def add_text(state, text, image, image_process_mode, request: gr.Request):
     state.append_message(state.roles[0], text)
     state.append_message(state.roles[1], None)
     state.skip_next = False
-    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 5
+    return (state, state.to_gradio_chatbot(), "", None) + (disable_btn,) * 6
 
 
 def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request: gr.Request):
@@ -158,7 +181,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
 
     if state.skip_next:
         # This generate call is skipped due to invalid inputs
-        yield (state, state.to_gradio_chatbot()) + (no_change_btn,) * 5
+        yield (state, state.to_gradio_chatbot()) + (no_change_btn,) * 6
         return
 
     if len(state.messages) == state.offset + 2:
@@ -242,7 +265,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
     pload['images'] = state.get_images()
 
     state.messages[-1][-1] = "▌"
-    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 5
+    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 6
 
     try:
         # Stream output
@@ -254,20 +277,20 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
                 if data["error_code"] == 0:
                     output = data["text"][len(prompt):].strip()
                     state.messages[-1][-1] = output + "▌"
-                    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 5
+                    yield (state, state.to_gradio_chatbot()) + (disable_btn,) * 6
                 else:
                     output = data["text"] + f" (error_code: {data['error_code']})"
                     state.messages[-1][-1] = output
-                    yield (state, state.to_gradio_chatbot()) + (disable_btn, disable_btn, disable_btn, enable_btn, enable_btn)
+                    yield (state, state.to_gradio_chatbot()) + (disable_btn, disable_btn, disable_btn, enable_btn, enable_btn, enable_btn)
                     return
                 time.sleep(0.03)
     except requests.exceptions.RequestException as e:
         state.messages[-1][-1] = server_error_msg
-        yield (state, state.to_gradio_chatbot()) + (disable_btn, disable_btn, disable_btn, enable_btn, enable_btn)
+        yield (state, state.to_gradio_chatbot()) + (disable_btn, disable_btn, disable_btn, enable_btn, enable_btn, enable_btn)
         return
 
     state.messages[-1][-1] = state.messages[-1][-1][:-1]
-    yield (state, state.to_gradio_chatbot()) + (enable_btn,) * 5
+    yield (state, state.to_gradio_chatbot()) + (enable_btn,) * 6
 
     finish_tstamp = time.time()
     logger.info(f"{output}")
@@ -286,7 +309,7 @@ def http_bot(state, model_selector, temperature, top_p, max_new_tokens, request:
         fout.write(json.dumps(data) + "\n")
 
 title_markdown = ("""
-# 🌋 LLaVA: Large Language and Vision Assistant
+# 🌋 LLaVA-defect: an LVLM expert based on LLaVA
 [[Project Page](https://llava-vl.github.io)] [[Code](https://github.com/haotian-liu/LLaVA)] [[Model](https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md)] | 📚 [[LLaVA](https://arxiv.org/abs/2304.08485)] [[LLaVA-v1.5](https://arxiv.org/abs/2310.03744)] [[LLaVA-v1.6](https://llava-vl.github.io/blog/2024-01-30-llava-1-6/)]
 """)
 
@@ -339,8 +362,8 @@ def build_demo(embed_mode, cur_dir=None, concurrency_count=10):
                 if cur_dir is None:
                     cur_dir = os.path.dirname(os.path.abspath(__file__))
                 gr.Examples(examples=[
-                    [f"{cur_dir}/examples/extreme_ironing.jpg", "What is unusual about this image?"],
-                    [f"{cur_dir}/examples/waterview.jpg", "What are the things I should be cautious about when I visit here?"],
+                    [f"{cur_dir}/examples/2.jpg", "please describe this image in table format."],
+                    [f"{cur_dir}/examples/1.jpg", "please give information about this image in table format."],
                 ], inputs=[imagebox, textbox])
 
                 with gr.Accordion("Parameters", open=False) as parameter_row:
@@ -366,6 +389,7 @@ def build_demo(embed_mode, cur_dir=None, concurrency_count=10):
                     flag_btn = gr.Button(value="⚠️  Flag", interactive=False)
                     #stop_btn = gr.Button(value="⏹️  Stop Generation", interactive=False)
                     regenerate_btn = gr.Button(value="🔄  Regenerate", interactive=False)
+                    download_btn = gr.DownloadButton(label="🚀  Download", interactive=False)
                     clear_btn = gr.Button(value="🗑️  Clear", interactive=False)
 
         if not embed_mode:
@@ -374,7 +398,7 @@ def build_demo(embed_mode, cur_dir=None, concurrency_count=10):
         url_params = gr.JSON(visible=False)
 
         # Register listeners
-        btn_list = [upvote_btn, downvote_btn, flag_btn, regenerate_btn, clear_btn]
+        btn_list = [upvote_btn, downvote_btn, flag_btn, regenerate_btn, clear_btn, download_btn]
         upvote_btn.click(
             upvote_last_response,
             [state, model_selector],
@@ -400,6 +424,12 @@ def build_demo(embed_mode, cur_dir=None, concurrency_count=10):
             [state, model_selector, temperature, top_p, max_output_tokens],
             [state, chatbot] + btn_list,
             concurrency_limit=concurrency_count
+        )
+        download_btn.click(
+            down_last_response,
+            [state, imagebox],
+            [download_btn],
+            queue=False
         )
 
         clear_btn.click(

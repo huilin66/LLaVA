@@ -44,12 +44,12 @@
 deepspeed llava/train/train_mem.py \
     --lora_enable True --lora_r 128 --lora_alpha 256 --mm_projector_lr 2e-5 \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path ./ckpt0/vicuna-7b-v1.5 \
+    --model_name_or_path ./ckpt/vicuna-7b-v1.5 \
     --version v1 \
     --data_path /nfsv4/23039356r/data/defect_caption/defect4k.json \
     --image_folder /nfsv4/23039356r/data/defect_caption \
-    --vision_tower ./ckpt0/clip-vit-large-patch14-336 \
-    --pretrain_mm_mlp_adapter ./ckpt0/llava-v1.5-7b/mm_projector.bin \
+    --vision_tower ckpt/clip-vit-large-patch14-336 \
+    --pretrain_mm_mlp_adapter ./ckpt/llava-v1.5-7b/mm_projector.bin \
     --mm_projector_type mlp2x_gelu \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
@@ -57,7 +57,7 @@ deepspeed llava/train/train_mem.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir ./checkpoints/llava-v1.5-7b-lora-defect1 \
+    --output_dir ./checkpoints/llava-v1.5-7b-lora-defect2 \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \

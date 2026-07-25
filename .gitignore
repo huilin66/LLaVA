@@ -33,3 +33,17 @@ ckpts*
 
 # Demo
 serve_images/
+
+
+*.whl
+ckpt/
+*.pth
+*.pt
+
+images/
+playground/
+
+report.pdf
+__pycache__/
+.idea
+.vscode/

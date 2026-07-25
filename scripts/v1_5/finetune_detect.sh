@@ -4,8 +4,8 @@ deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
     --model_name_or_path ./ckpt/vicuna-7b-v1.5 \
     --version v1 \
-    --data_path /nfsv4/23039356r/data/defect_caption/llava_v1_5_vqa320.json \
-    --image_folder /nfsv4/23039356r/data/defect_caption \
+    --data_path /scrinvme/huilin/bdd/open_source_data/cubit-det/llava_train.json \
+    --image_folder /scrinvme/huilin/bdd/open_source_data/cubit-det/images \
     --vision_tower ckpt/clip-vit-large-patch14-336 \
     --pretrain_mm_mlp_adapter ./ckpt/llava-v1.5-7b/mm_projector.bin \
     --mm_projector_type mlp2x_gelu \

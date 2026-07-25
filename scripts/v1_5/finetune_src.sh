@@ -2,12 +2,12 @@
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero3.json \
-    --model_name_or_path ./ckpt/vicuna-7b-v1.5 \
+    --model_name_or_path lmsys/vicuna-13b-v1.5 \
     --version v1 \
-    --data_path /nfsv4/23039356r/data/defect_caption/llava_v1_5_vqa320.json \
-    --image_folder /nfsv4/23039356r/data/defect_caption \
-    --vision_tower ckpt/clip-vit-large-patch14-336 \
-    --pretrain_mm_mlp_adapter ./ckpt/llava-v1.5-7b/mm_projector.bin \
+    --data_path ./playground/data/llava_v1_5_mix665k.json \
+    --image_folder ./playground/data \
+    --vision_tower openai/clip-vit-large-patch14-336 \
+    --pretrain_mm_mlp_adapter ./checkpoints/llava-v1.5-13b-pretrain/mm_projector.bin \
     --mm_projector_type mlp2x_gelu \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
@@ -15,9 +15,9 @@ deepspeed llava/train/train_mem.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir ./checkpoints/llava-v1.5-7b \
+    --output_dir ./checkpoints/llava-v1.5-13b \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 2 \
+    --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \

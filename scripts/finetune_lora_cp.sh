@@ -5,39 +5,37 @@
 # Uncomment and set the following variables correspondingly to run this script:
 
 ################## VICUNA ##################
-# PROMPT_VERSION=v1
-# MODEL_VERSION="vicuna-v1-3-7b"
+# PROMPT_VERSION=v1a
+# llava-v1.5-7b="vicuna-v1-3-7b"
 ################## VICUNA ##################
 
 ################## LLaMA-2 ##################
 # PROMPT_VERSION="llava_llama_2"
-# MODEL_VERSION="llama-2-7b-chat"
+# llava-v1.5-7b="llama-2-7b-chat"
 ################## LLaMA-2 ##################
 
-PROMPT_VERSION=v1
-MODEL_VERSION=llava-v1.5-7b
 
 deepspeed llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
     --lora_enable True \
-    --model_name_or_path ./ckpt/$MODEL_VERSION \
-    --version $PROMPT_VERSION \
+    --model_name_or_path ./ckpt/llava-v1.5-7b \
+    --version v1 \
     --data_path /nfsv4/23039356r/data/defect_caption/llava_v1_5_vqa1k.json \
     --image_folder /nfsv4/23039356r/data/defect_caption \
     --vision_tower ckpt/clip-vit-large-patch14-336 \
-    --pretrain_mm_mlp_adapter ./ckpt/$MODEL_VERSION-pretrain/mm_projector.bin \
+    --pretrain_mm_mlp_adapter ./ckpt/llava-v1.5-7b-pretrain/mm_projector.bin \
     --mm_vision_select_layer -2 \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/$MODEL_VERSION-finetune_lora \
+    --output_dir ./checkpoints/llava-v1.5-7b-finetune_lora \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 1 \
     --evaluation_strategy "no" \
     --save_strategy "steps" \
-    --save_steps 10 \
+    --save_steps 30 \
     --save_total_limit 1 \
     --learning_rate 2e-5 \
     --weight_decay 0. \
